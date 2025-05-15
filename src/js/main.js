@@ -165,26 +165,46 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('total-messages').textContent = results.totalMessages;
             document.getElementById('total-calls').textContent = results.totalCalls;
         }, 500);
+          // Format call time as hours, minutes and seconds
+        const totalSeconds = results.totalCallDuration;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
         
-        // Format call time as hours and minutes
-        const totalCallMinutes = Math.floor(results.totalCallDuration / 60);
-        const hours = Math.floor(totalCallMinutes / 60);
-        const minutes = totalCallMinutes % 60;
-        document.getElementById('total-call-time').textContent = hours > 0 
-            ? `${hours}小時${minutes}分鐘` 
-            : `${minutes}分鐘`;
+        let timeString = '';
+        if (hours > 0) {
+            timeString += `${hours}小時`;
+        }
+        if (minutes > 0 || hours > 0) {
+            timeString += `${minutes}分鐘`;
+        }
+        if (seconds > 0 || (hours === 0 && minutes === 0)) {
+            timeString += `${seconds}秒`;
+        }
+        
+        document.getElementById('total-call-time').textContent = timeString;
         
         // Max messages per day
         document.getElementById('max-messages-day').textContent = results.maxMessagesDay.count;
         document.getElementById('max-messages-date').textContent = formatDate(results.maxMessagesDay.date);
+          // Max call duration per day
+        const maxCallSeconds = results.maxCallDay.duration;
+        const maxCallHours = Math.floor(maxCallSeconds / 3600);
+        const maxCallMinutes = Math.floor((maxCallSeconds % 3600) / 60);
+        const maxCallRemainingSeconds = maxCallSeconds % 60;
         
-        // Max call duration per day
-        const maxCallMinutes = Math.floor(results.maxCallDay.duration / 60);
-        const maxCallHours = Math.floor(maxCallMinutes / 60);
-        const maxCallRemainingMinutes = maxCallMinutes % 60;
-        document.getElementById('max-call-day').textContent = maxCallHours > 0 
-            ? `${maxCallHours}小時${maxCallRemainingMinutes}分鐘` 
-            : `${maxCallMinutes}分鐘`;
+        let maxCallTimeString = '';
+        if (maxCallHours > 0) {
+            maxCallTimeString += `${maxCallHours}小時`;
+        }
+        if (maxCallMinutes > 0 || maxCallHours > 0) {
+            maxCallTimeString += `${maxCallMinutes}分鐘`;
+        }
+        if (maxCallRemainingSeconds > 0 || (maxCallHours === 0 && maxCallMinutes === 0)) {
+            maxCallTimeString += `${maxCallRemainingSeconds}秒`;
+        }
+        
+        document.getElementById('max-call-day').textContent = maxCallTimeString;
         document.getElementById('max-call-date').textContent = formatDate(results.maxCallDay.date);
         
         // Update user stats table
@@ -204,14 +224,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         for (const [username, stats] of Object.entries(users)) {
             const row = document.createElement('tr');
+              // Format call time
+            const callSeconds = stats.callDuration;
+            const callHours = Math.floor(callSeconds / 3600);
+            const callMinutes = Math.floor((callSeconds % 3600) / 60);
+            const callRemainingSeconds = callSeconds % 60;
             
-            // Format call time
-            const callMinutes = Math.floor(stats.callDuration / 60);
-            const callHours = Math.floor(callMinutes / 60);
-            const callRemainingMinutes = callMinutes % 60;
-            const formattedCallTime = callHours > 0 
-                ? `${callHours}小時${callRemainingMinutes}分鐘` 
-                : `${callMinutes}分鐘`;
+            let formattedCallTime = '';
+            if (callHours > 0) {
+                formattedCallTime += `${callHours}小時`;
+            }
+            if (callMinutes > 0 || callHours > 0) {
+                formattedCallTime += `${callMinutes}分鐘`;
+            }
+            if (callRemainingSeconds > 0 || (callHours === 0 && callMinutes === 0)) {
+                formattedCallTime += `${callRemainingSeconds}秒`;
+            }
             
             row.innerHTML = `
                 <td>${username}</td>

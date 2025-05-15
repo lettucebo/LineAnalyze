@@ -16,11 +16,9 @@ class LineParser {    /**
         
         // Regular expressions for message format
         this.messagePatternEN = /^(\d{2}:\d{2})\t(.+?)\t(.+)$/;
-        this.messagePatternTW = /^(\d{2}:\d{2})\t(.+?)\t(.+)$/;
-        
-        // Regular expressions for call time
-        this.callPatternEN = /Call time (\d+):(\d+)/;
-        this.callPatternTW = /通話時間 (\d+):(\d+)/;
+        this.messagePatternTW = /^(\d{2}:\d{2})\t(.+?)\t(.+)$/;        // Regular expressions for call time (support both mm:ss and hh:mm:ss formats)
+        this.callPatternEN = /Call time ((\d+):)?(\d+):(\d+)/;
+        this.callPatternTW = /通話時間 ((\d+):)?(\d+):(\d+)/;
         
         // Regular expressions for stickers and photos
         this.stickerPatternEN = /\[(Sticker|Animation)\]/;
@@ -140,15 +138,23 @@ class LineParser {    /**
                     type = "photo";
                 }
                 // Check for call
-                else {
-                    const callMatch = format === "EN" ?
+                else {                    const callMatch = format === "EN" ?
                         content.match(this.callPatternEN) :
                         content.match(this.callPatternTW);
-                        
-                    if (callMatch) {
+                          if (callMatch) {
                         type = "call";
-                        callMinutes = parseInt(callMatch[1], 10);
-                        callSeconds = parseInt(callMatch[2], 10);
+                        
+                        // Handle both hh:mm:ss and mm:ss formats
+                        if (callMatch[1] !== undefined) {
+                            // If format is hh:mm:ss (e.g., "1:04:16")
+                            const hours = parseInt(callMatch[2], 10);
+                            callMinutes = parseInt(callMatch[3], 10) + (hours * 60);
+                            callSeconds = parseInt(callMatch[4], 10);
+                        } else {
+                            // If format is just mm:ss (e.g., "5:21")
+                            callMinutes = parseInt(callMatch[3], 10);
+                            callSeconds = parseInt(callMatch[4], 10);
+                        }
                     }
                 }
                 
