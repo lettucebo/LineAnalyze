@@ -31,9 +31,10 @@ class ChartRenderer {
                 }
             }
         };
-        
-        // Chart.js global configuration
-        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+          // Chart.js global configuration (更新適用於Chart.js 3.x版本)
+        Chart.defaults.font = {
+            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+        };
         Chart.defaults.color = this.colors.dark;
         Chart.defaults.responsive = true;
         Chart.defaults.maintainAspectRatio = false;
@@ -67,8 +68,7 @@ class ChartRenderer {
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, this.colors.gradient.primary.start);
         gradient.addColorStop(1, this.colors.gradient.primary.end);
-        
-        const chart = new Chart(ctx, {
+          const chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: formattedDates,
@@ -115,17 +115,23 @@ class ChartRenderer {
                             maxRotation: 45,
                             minRotation: 45
                         }
-                    },
-                    y: {
+                    },                    y: {
                         beginAtZero: true,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
                         },
                         ticks: {
-                            precision: 0
+                            callback: function(value) {
+                                if (Math.floor(value) === value) {
+                                    return value;
+                                }
+                            }
                         }
                     }
-                }
+                },
+                // 修正在行動裝置上的顯示問題
+                responsive: true,
+                maintainAspectRatio: false
             }
         });
         
@@ -266,13 +272,16 @@ class ChartRenderer {
                             minRotation: 45
                         }
                     },
-                    y: {
-                        beginAtZero: true,
+                    y: {                        beginAtZero: true,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
                         },
                         ticks: {
-                            precision: 0
+                            callback: function(value) {
+                                if (Math.floor(value) === value) {
+                                    return value;
+                                }
+                            }
                         }
                     }
                 }

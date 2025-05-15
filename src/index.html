@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Chart.js 3.x版本不需要CSS文件 -->
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -7,11 +8,8 @@
     <!-- Bootstrap 5 CSS from Cloudflare CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" integrity="sha512-t4GWSVZO1eC8BM339Xd7Uphw5s17a86tIZIj8qRxhnKub6WoyhnrxeCIMeAqBPgdZGlCcG2PrZjMc+Wr78+5Xg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Font Awesome from Cloudflare CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- Chart.js from Cloudflare CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.min.css" integrity="sha512-wxq3wFiqpqnKE8A0cjn6LY9SXfePQ8ZKSPzNbLhS+qzX3eQ+KfCQpx4NTWjTHGK4Gg4wpGEgU7EaZ3YEbCVzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div class="container-fluid p-0">        <!-- Hero Section -->
@@ -299,15 +297,15 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Bootstrap 5 JS Bundle from Cloudflare CDN -->
+    </div>    <!-- Bootstrap 5 JS Bundle from Cloudflare CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha512-VK2zcvntEufaimc+efOYi622VN5ZacdnufnmX7zIhCPmjhKnOi9ZDMtg1/ug5l183f19gG1/cBstPO4D8N/Img==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- Chart.js from Cloudflare CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.min.js" integrity="sha512-TJ7U6JRJx5IpyvvO9atNnBzwJIoZDaQnQhb0Wmw32Rj5BQHgy2+loFwSOuUYFL58M0UwHOWPUPXlw8aRh0YZdQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- Word Cloud Library from Cloudflare CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" integrity="sha512-M7nHCiNUOwFt6Us3r8MvU7wy6hN2gf8yjmvqWR/5sMJl1GXSNGy7ltMpyqD7nQl2CqFsp0GzMdLUBZ23R0oFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js" integrity="sha512-HjKxWye8loe8ApK3PgGhqptWJUHjZRxHmMjbOh8QmJ8LkA8YrWUQbZj+rNdSURQqdZorqnFQGEUBThEJNUmUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>    <!-- Custom JS -->
+    
+    <!-- Chart.js from Cloudflare CDN (更新版本和完整性) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- D3.js from Cloudflare CDN (更新版本和完整性) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.4/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script><!-- Custom JS -->
     <script src="js/parser.js"></script>
     <script src="js/analyzer.js"></script>
     <script src="js/charts.js"></script>
