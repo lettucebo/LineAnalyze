@@ -253,8 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.appendChild(row);
         }
     }
-    
-    /**
+      /**
      * Creates charts for visualizing the data
      * @param {Object} results - Analysis results
      */
@@ -266,15 +265,48 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Create chart renderer
         const renderer = new ChartRenderer(results);
-        
-        // Create charts
+          // 先檢查每日訊息數據
         dailyMessagesChart = renderer.createDailyMessagesChart();
-        userMessagesChart = renderer.createUserMessagesChart();
-        dailyCallChart = renderer.createDailyCallChart();
+        if (!dailyMessagesChart) {
+            console.warn("無法創建每日訊息圖表");
+            const container = document.getElementById('daily-messages-chart').parentNode;
+            container.innerHTML = '<div class="text-center text-muted my-5"><i class="fas fa-exclamation-triangle me-2"></i>沒有足夠的訊息數據來生成圖表</div>';
+        }
         
-        // Create word cloud
-        renderer.createWordCloud();
+        // 檢查用戶數據是否有效
+        if (!results || !results.users || Object.keys(results.users).length === 0) {
+            console.warn("分析結果中沒有用戶數據");
+            // 顯示錯誤訊息
+            const container = document.getElementById('user-messages-chart').parentNode;
+            container.innerHTML = '<div class="text-center text-muted my-5"><i class="fas fa-exclamation-triangle me-2"></i>沒有足夠的用戶數據來生成圖表</div>';
+        } else {
+            // 創建用戶訊息圖表
+            userMessagesChart = renderer.createUserMessagesChart();
+        }
+        
+        // 創建每日通話圖表
+        dailyCallChart = renderer.createDailyCallChart();
+          // Create word cloud
+        try {
+            renderer.createWordCloud();
+        } catch (error) {
+            console.error('圖表生成錯誤:', error);
+            // 如果文字雲生成失敗，顯示一個友好的錯誤訊息
+            const container = document.getElementById('word-cloud');
+            if (container) {
+                container.innerHTML = '<div class="text-center text-muted my-5"><i class="fas fa-exclamation-triangle me-2"></i>無法生成文字雲</div>';
+            }
+        }
     }
+    
+    // 添加一個全局的錯誤處理，用於捕捉圖表渲染錯誤
+    window.addEventListener('error', function(event) {
+        if (event.error && event.error.message && 
+            (event.error.message.includes('chart') || event.error.message.includes('Chart'))) {
+            console.error('圖表錯誤:', event.error);
+            alert('圖表渲染時發生錯誤，請刷新頁面或嘗試使用不同的數據。');
+        }
+    });
       /**
      * Format date string for better display
      * @param {string} dateStr - Date string in MM/DD/YYYY or YYYY/MM/DD format

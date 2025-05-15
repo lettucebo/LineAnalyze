@@ -163,6 +163,15 @@ body {
     position: relative;
     height: 300px;
     width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 特別針對用戶訊息比例圖表的樣式 */
+#user-messages-chart {
+    height: 300px !important;
+    width: 100% !important;
+    display: block;
+    min-height: 300px;
 }
 
 #word-cloud {

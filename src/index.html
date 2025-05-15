@@ -206,23 +206,23 @@
                 <div class="row mb-5">
                     <div class="col-12">
                         <h2 class="section-title mb-4"><i class="fas fa-chart-line me-2"></i>趨勢圖表</h2>
-                    </div>
-                    <div class="col-lg-6 mb-4">
+                    </div>                    <div class="col-lg-6 mb-4">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">每日訊息數量</h5>
-                                <div class="chart-container">
+                                <div class="chart-container" style="min-height:300px; position:relative;">
                                     <canvas id="daily-messages-chart"></canvas>
+                                    <!-- 如果沒有數據，將在這裡顯示警告訊息 -->
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-lg-6 mb-4">
+                    </div><div class="col-lg-6 mb-4">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">使用者訊息比例</h5>
-                                <div class="chart-container">
+                                <div class="chart-container" style="min-height:300px; position:relative;">
                                     <canvas id="user-messages-chart"></canvas>
+                                    <!-- 這裡將顯示警告訊息（如果沒有數據） -->
                                 </div>
                             </div>
                         </div>

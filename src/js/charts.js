@@ -43,9 +43,27 @@ class ChartRenderer {
     /**
      * Create the daily messages line chart
      * @return {Chart} The Chart.js chart object
-     */
-    createDailyMessagesChart() {
-        const ctx = document.getElementById('daily-messages-chart').getContext('2d');
+     */    createDailyMessagesChart() {
+        const canvas = document.getElementById('daily-messages-chart');
+        if (!canvas) {
+            console.error('無法找到每日訊息圖表的Canvas元素');
+            return null;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('無法獲取2D上下文');
+            return null;
+        }
+        
+        // 檢查數據是否存在
+        if (!this.results || !this.results.messagesByDate || 
+            Object.keys(this.results.messagesByDate).length === 0) {
+            console.warn('缺少每日訊息數據');
+            const container = canvas.parentNode;
+            container.innerHTML = '<div class="text-center text-muted my-5"><i class="fas fa-exclamation-triangle me-2"></i>沒有足夠的消息數據來生成圖表</div>';
+            return null;
+        }
         
         const dates = Object.keys(this.results.messagesByDate);
         const messageCounts = Object.values(this.results.messagesByDate);
@@ -128,10 +146,18 @@ class ChartRenderer {
                             }
                         }
                     }
-                },
-                // 修正在行動裝置上的顯示問題
+                },                // 修正在行動裝置上的顯示問題
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                // 確保圖表有足夠的空間顯示
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
+                }
             }
         });
         
@@ -141,14 +167,25 @@ class ChartRenderer {
     /**
      * Create the pie chart showing user message distribution
      * @return {Chart} The Chart.js chart object
-     */
-    createUserMessagesChart() {
+     */    createUserMessagesChart() {
         const ctx = document.getElementById('user-messages-chart').getContext('2d');
         
         // Extract user data
         const users = Object.keys(this.results.users);
         const messageCounts = users.map(user => this.results.users[user].totalMessages);
         
+        // 檢查是否有資料
+        if (users.length === 0 || messageCounts.every(count => count === 0)) {
+            console.warn("沒有用戶訊息數據可用");
+            // 在圖表容器中顯示警告訊息
+            const container = document.getElementById('user-messages-chart').parentNode;
+            const warningMsg = document.createElement('div');
+            warningMsg.className = 'text-center text-muted mt-5';
+            warningMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 沒有足夠的數據來生成圖表';
+            container.appendChild(warningMsg);
+            return null;
+        }
+
         // Generate colors for users
         const userColors = this.generateColorPalette(users.length);
         
@@ -166,12 +203,15 @@ class ChartRenderer {
             },
             options: {
                 cutout: '60%',
-                plugins: {
-                    legend: {
+                plugins: {                    legend: {
                         position: 'right',
                         labels: {
                             boxWidth: 15,
-                            padding: 15
+                            padding: 15,
+                            font: {
+                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                                size: 12
+                            }
                         }
                     },
                     tooltip: {
@@ -187,6 +227,18 @@ class ChartRenderer {
                                 return `${context.label}: ${value} (${percentage}%)`;
                             }
                         }
+                    }
+                },
+                // 明確設置響應式選項
+                responsive: true,
+                maintainAspectRatio: false,
+                // 確保圖表有足夠的空間顯示
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0
                     }
                 }
             }
