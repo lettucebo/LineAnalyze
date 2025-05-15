@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE聊天分析器</title>
+    <!-- Bootstrap 5 CSS from Cloudflare CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" integrity="sha512-t4GWSVZO1eC8BM339Xd7Uphw5s17a86tIZIj8qRxhnKub6WoyhnrxeCIMeAqBPgdZGlCcG2PrZjMc+Wr78+5Xg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Font Awesome from Cloudflare CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js from Cloudflare CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.min.css" integrity="sha512-wxq3wFiqpqnKE8A0cjn6LY9SXfePQ8ZKSPzNbLhS+qzX3eQ+KfCQpx4NTWjTHGK4Gg4wpGEgU7EaZ3YEbCVzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="container-fluid p-0">        <!-- Hero Section -->
+        <section class="hero-section text-center py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 mx-auto">
+                        <h1 class="display-4 mb-3 fw-bold">
+                            <i class="fab fa-line me-2 text-success"></i>LINE聊天分析器
+                        </h1>
+                        <p class="lead mb-4">上傳您的LINE聊天記錄，獲取精美的資料分析與視覺化統計</p>
+                        <div class="features-icons d-flex justify-content-center mb-4">
+                            <div class="feature-icon mx-3" data-custom-tooltip="訊息統計">
+                                <i class="fas fa-comments fa-2x"></i>
+                            </div>
+                            <div class="feature-icon mx-3" data-custom-tooltip="通話分析">
+                                <i class="fas fa-phone fa-2x"></i>
+                            </div>
+                            <div class="feature-icon mx-3" data-custom-tooltip="視覺化圖表">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <div class="feature-icon mx-3" data-custom-tooltip="文字雲">
+                                <i class="fas fa-cloud fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div><div class="upload-container mt-5">
+                    <form id="upload-form">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group mb-3">
+                                    <input type="file" class="form-control" id="file-input" accept=".txt">
+                                    <button class="btn btn-primary" type="submit" id="upload-button" data-custom-tooltip="點擊分析您的聊天記錄">
+                                        <i class="fas fa-upload me-2"></i>分析
+                                    </button>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>支援LINE中文版與英文版的聊天記錄
+                                    </small>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <div class="form-check form-switch d-inline-block">
+                                        <input class="form-check-input" type="checkbox" id="sample-data-switch">
+                                        <label class="form-check-label" for="sample-data-switch">使用範例數據</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div id="loading" class="d-none">
+                    <div class="spinner-border text-primary mt-4" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <p class="mt-2">分析中，請稍候...</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Results Section (Initially Hidden) -->
+        <section id="results-section" class="py-5 d-none">
+            <div class="container">
+                <!-- Overview Cards -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <h2 class="section-title mb-4"><i class="fas fa-chart-pie me-2"></i>聊天概況</h2>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">聊天天數</h5>
+                                        <h3 class="mb-0" id="chat-days">0</h3>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">訊息總數</h5>
+                                        <h3 class="mb-0" id="total-messages">0</h3>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">通話總數</h5>
+                                        <h3 class="mb-0" id="total-calls">0</h3>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">總通話時間</h5>
+                                        <h3 class="mb-0" id="total-call-time">0分鐘</h3>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">最多單日訊息</h5>
+                                        <h3 class="mb-0" id="max-messages-day">0</h3>
+                                        <small id="max-messages-date">-</small>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-fire"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">最多單日通話</h5>
+                                        <h3 class="mb-0" id="max-call-day">0分鐘</h3>
+                                        <small id="max-call-date">-</small>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="fas fa-headset"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Stats -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <h2 class="section-title mb-4"><i class="fas fa-users me-2"></i>使用者分析</h2>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>使用者</th>
+                                                <th>訊息數量</th>
+                                                <th>貼圖數量</th>
+                                                <th>照片數量</th>
+                                                <th>通話數量</th>
+                                                <th>通話時間</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="user-stats">
+                                            <!-- User stats will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <h2 class="section-title mb-4"><i class="fas fa-chart-line me-2"></i>趨勢圖表</h2>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">每日訊息數量</h5>
+                                <div class="chart-container">
+                                    <canvas id="daily-messages-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">使用者訊息比例</h5>
+                                <div class="chart-container">
+                                    <canvas id="user-messages-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">每日通話時間 (分鐘)</h5>
+                                <div class="chart-container">
+                                    <canvas id="daily-call-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">文字雲 (最常用詞彙)</h5>
+                                <div class="chart-container">
+                                    <div id="word-cloud"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>        <!-- Footer -->
+        <footer class="bg-dark text-white text-center py-4">
+            <div class="container">
+                <p class="mb-0">LINE聊天分析器 &copy; 2025. 使用 HTML、JavaScript 和 CSS 開發。</p>
+                <div class="mt-2">
+                    <i class="fab fa-html5 mx-1"></i>
+                    <i class="fab fa-js mx-1"></i>
+                    <i class="fab fa-css3-alt mx-1"></i>
+                    <i class="fab fa-bootstrap mx-1"></i>
+                </div>
+                <div class="mt-3">
+                    <button id="about-btn" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                        <i class="fas fa-info-circle me-1"></i>關於此專案
+                    </button>
+                </div>
+            </div>
+        </footer>
+        
+        <!-- About Modal -->
+        <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="aboutModalLabel">
+                            <i class="fab fa-line me-2"></i>關於 LINE 聊天分析器
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>LINE聊天分析器是一個前端網站，幫助使用者分析匯出的 LINE 聊天紀錄。透過這個工具，用戶可以獲取各種統計數據和視覺化圖表，深入了解他們的聊天習慣和互動模式。</p>
+                        
+                        <h6>功能特點</h6>
+                        <ul>
+                            <li>支援上傳 LINE 聊天紀錄匯出檔案 (.txt 格式)</li>
+                            <li>同時支援中文版本與英文版本的 LINE 聊天記錄</li>
+                            <li>展示各類統計資訊與視覺化圖表</li>
+                            <li>支援文字雲顯示常用詞彙</li>
+                        </ul>
+                        
+                        <h6>隱私聲明</h6>
+                        <p class="mb-0">本工具僅在本地瀏覽器中處理資料，不會將您的聊天記錄上傳到任何伺服器。您的隱私安全對我們來說至關重要。</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle from Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha512-VK2zcvntEufaimc+efOYi622VN5ZacdnufnmX7zIhCPmjhKnOi9ZDMtg1/ug5l183f19gG1/cBstPO4D8N/Img==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Chart.js from Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.min.js" integrity="sha512-TJ7U6JRJx5IpyvvO9atNnBzwJIoZDaQnQhb0Wmw32Rj5BQHgy2+loFwSOuUYFL58M0UwHOWPUPXlw8aRh0YZdQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Word Cloud Library from Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" integrity="sha512-M7nHCiNUOwFt6Us3r8MvU7wy6hN2gf8yjmvqWR/5sMJl1GXSNGy7ltMpyqD7nQl2CqFsp0GzMdLUBZ23R0oFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js" integrity="sha512-HjKxWye8loe8ApK3PgGhqptWJUHjZRxHmMjbOh8QmJ8LkA8YrWUQbZj+rNdSURQqdZorqnFQGEUBThEJNUmUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>    <!-- Custom JS -->
+    <script src="js/parser.js"></script>
+    <script src="js/analyzer.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/animation.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+/* Custom CSS for LINE Chat Analyzer */
+
+:root {
+    --primary-color: #ff6b6b;
+    --secondary-color: #feca57;
+    --accent-color: #48dbfb;
+    --text-color: #2d3436;
+    --light-color: #f9f9f9;
+    --gradient-start: #ff6b6b;
+    --gradient-end: #ff8e8e;
+    --dark-color: #2d3436;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff5f5;
+    color: var(--text-color);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="10" fill="rgba(255,255,255,0.1)"/></svg>');
+    background-size: 30px 30px;
+    opacity: 0.3;
+}
+
+/* Feature Icons */
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    animation: floating 3s ease-in-out infinite;
+}
+
+.feature-icon:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.feature-icon:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.feature-icon:nth-child(4) {
+    animation-delay: 1.5s;
+}
+
+.feature-icon:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.hero-section h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    animation: fadeInDown 1s ease;
+}
+
+.hero-section p {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 1s ease 0.2s;
+    animation-fill-mode: both;
+}
+
+/* Upload Container */
+.upload-container {
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeIn 1s ease 0.4s;
+    animation-fill-mode: both;
+}
+
+#upload-button {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--dark-color);
+    transition: all 0.3s ease;
+}
+
+#upload-button:hover {
+    background-color: var(--dark-color);
+    border-color: var(--dark-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Stats Cards */
+.stat-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    background: white;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.stat-card .card-body {
+    padding: 1.5rem;
+}
+
+.stat-card h5 {
+    color: #777;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card h3 {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    opacity: 0.8;
+}
+
+/* Section Title */
+.section-title {
+    position: relative;
+    font-weight: 700;
+    color: var(--primary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 50px;
+    background-color: var(--secondary-color);
+    border-radius: 2px;
+}
+
+/* Charts */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+#word-cloud {
+    height: 300px;
+    width: 100%;
+}
+
+/* Tables */
+.table {
+    vertical-align: middle;
+}
+
+.table thead th {
+    background-color: #fff9f9;
+    border-bottom: none;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #fff9f9;
+}
+
+/* Loading Spinner */
+#loading {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Animation Classes */
+.fadeInUp {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.pulse-once {
+    animation: pulse 1s ease;
+}
+
+.floating {
+    animation: floating 3s ease-in-out infinite;
+}
+
+.card-hover-glow {
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5) !important;
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background-color: rgba(45, 52, 54, 0.9);
+    color: white;
+    border-radius: 5px;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    z-index: 100;
+}
+
+.custom-tooltip:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(45, 52, 54, 0.9) transparent transparent transparent;
+}
+
+.custom-tooltip.show-tooltip {
+    opacity: 1;
+    visibility: visible;
+    bottom: 125%;
+}
+
+/* Animation utility classes */
+.animate-on-scroll {
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Interactive effects */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 3rem 0;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .custom-tooltip {
+        display: none;
+    }
+}
