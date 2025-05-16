@@ -206,15 +206,43 @@ class ChatAnalyzer {
     }
     
     /**
+     * Check if a message is a system message
+     * @private
+     * @param {Object} message - The message object to check
+     * @return {boolean} True if the message is a system message
+     */
+    _isSystemMessage(message) {
+        // 通話相關的系統訊息
+        const callSystemPatterns = [
+            /通話時間/,
+            /☎/,
+            /已結束通話/,
+            /結束通話/,
+            /您已/,
+            /通話/,
+            /Call time/,
+            /call ended/,
+            /missed a voice call/,
+            /Started a voice call/
+        ];
+
+        return message.type === "call" || 
+               (message.type === "text" && 
+                callSystemPatterns.some(pattern => pattern.test(message.content)));
+    }
+
+    /**
      * Analyze word frequency in text messages
      * @return {Object} Object with words as keys and frequencies as values
-     */    analyzeWordFrequency() {
+     */
+    analyzeWordFrequency() {
         const wordCounts = {};
         const stopWords = this.getStopWords();
         
         // Process all text messages
         this.chatData.messages.forEach(message => {
-            if (message.type === "text") {
+            // 只處理文字訊息，且排除系統訊息
+            if (message.type === "text" && !this._isSystemMessage(message)) {
                 // For Chinese text, we need special handling for characters
                 let words = [];
                 
@@ -242,7 +270,7 @@ class ChatAnalyzer {
                     // For non-Chinese text, use standard word tokenization
                     words = message.content
                         .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")  // Remove punctuation
-                        .split(/\s+/);                                // Split by whitespace
+                        .split(/\s+/);                                 // Split by whitespace
                 }
                 
                 // Filter words
