@@ -14,9 +14,11 @@ class LineParser {    /**
         this.datePatternEN = /^([A-Za-z]+), (\d{1,2}\/\d{1,2}\/\d{4})$/;
         this.datePatternTW = /^(\d{4}\/\d{1,2}\/\d{1,2})（[週|星期][一|二|三|四|五|六|日|天]）$/;
         
-        // Regular expressions for message format
+        // Regular expressions for message format (updated to handle 上午/下午)
         this.messagePatternEN = /^(\d{2}:\d{2})\t(.+?)\t(.+)$/;
-        this.messagePatternTW = /^(\d{2}:\d{2})\t(.+?)\t(.+)$/;        // Regular expressions for call time (support both mm:ss and hh:mm:ss formats)
+        this.messagePatternTW = /^([上下]午)?(\d{2}:\d{2})\t(.+?)\t(.+)$/;
+        
+        // Regular expressions for call time (support both mm:ss and hh:mm:ss formats)
         this.callPatternEN = /Call time ((\d+):)?(\d+):(\d+)/;
         this.callPatternTW = /通話時間 ((\d+):)?(\d+):(\d+)/;
         
@@ -36,7 +38,25 @@ class LineParser {    /**
         this.audioPatternEN = /\[Voice message\]/;
         this.audioPatternTW = /\[語音訊息\]/;
     }
-    
+
+    /**
+     * Convert 12-hour format to 24-hour format
+     * @private
+     */
+    _convertTo24Hour(time, period) {
+        if (!period) return time; // If no period specified, return as is
+        
+        let [hours, minutes] = time.split(':').map(n => parseInt(n, 10));
+        
+        if (period === '下午' && hours < 12) {
+            hours += 12;
+        } else if (period === '上午' && hours === 12) {
+            hours = 0;
+        }
+        
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+
     /**
      * Parses the chat file content
      * @param {string} content - The content of the chat file
@@ -117,10 +137,14 @@ class LineParser {    /**
             const messageMatch = format === "EN" ?
                 line.match(this.messagePatternEN) :
                 line.match(this.messagePatternTW);
-                
-            if (messageMatch && chatData.currentDate) {                const time = messageMatch[1];
-                const sender = messageMatch[2];
-                const content = messageMatch[3];
+            
+            if (messageMatch && chatData.currentDate) {
+                const period = format === "TW" ? messageMatch[1] : null; // 上午/下午
+                const time = format === "EN" ? 
+                    messageMatch[1] : 
+                    this._convertTo24Hour(messageMatch[2], period);
+                const sender = format === "EN" ? messageMatch[2] : messageMatch[3];
+                const content = format === "EN" ? messageMatch[3] : messageMatch[4];
                 
                 // Determine message type (text, sticker, photo, call)
                 let type = "text";
@@ -138,10 +162,12 @@ class LineParser {    /**
                     type = "photo";
                 }
                 // Check for call
-                else {                    const callMatch = format === "EN" ?
+                else {
+                    const callMatch = format === "EN" ?
                         content.match(this.callPatternEN) :
                         content.match(this.callPatternTW);
-                          if (callMatch) {
+                    
+                    if (callMatch) {
                         type = "call";
                         
                         // Handle both hh:mm:ss and mm:ss formats

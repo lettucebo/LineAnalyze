@@ -36,10 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading indicator
         loadingIndicator.classList.remove('d-none');
         uploadButton.disabled = true;
-          // Simulate network delay
+        
+        // Simulate network delay
         setTimeout(() => {
-            // Fetch sample data (in a real scenario, this would be an AJAX request)
-            const sampleDataURL = 'data/chat-tw.txt'; // Path to sample data
+            // Fetch sample data
+            const sampleDataURL = 'data/sample.txt';  // Changed from chat-tw.txt to sample.txt
             
             fetch(sampleDataURL)
                 .then(response => response.text())
