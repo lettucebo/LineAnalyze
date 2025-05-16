@@ -68,28 +68,18 @@ class ChartRenderer {
         const dates = Object.keys(this.results.messagesByDate);
         const messageCounts = Object.values(this.results.messagesByDate);
         
-        // Format dates for display (MM/DD or YYYY/MM/DD)
-        const formattedDates = dates.map(date => {
-            // Check if date is in MM/DD/YYYY or YYYY/MM/DD format
-            const parts = date.split('/');
-            if (parts.length === 3) {
-                if (parts[0].length === 4) { // YYYY/MM/DD
-                    return `${parts[1]}/${parts[2]}`;
-                } else { // MM/DD/YYYY
-                    return `${parts[0]}/${parts[1]}`;
-                }
-            }
-            return date;
-        });
+        // Convert dates to day numbers (1, 2, 3, ...)
+        const dayNumbers = dates.map((_, index) => (index + 1).toString());
         
         // Create gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, this.colors.gradient.primary.start);
         gradient.addColorStop(1, this.colors.gradient.primary.end);
-          const chart = new Chart(ctx, {
+        
+        const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: formattedDates,
+                labels: dayNumbers,
                 datasets: [{
                     label: '訊息數量',
                     data: messageCounts,
@@ -143,19 +133,36 @@ class ChartRenderer {
                             display: false
                         },
                         ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '天數',
+                            font: {
+                                size: 14
+                            }
                         }
-                    },                    y: {
+                    },
+                    y: {
                         beginAtZero: true,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
                         },
                         ticks: {
-                            callback: function(value) {
-                                if (Math.floor(value) === value) {
-                                    return value;
-                                }
+                            stepSize: 1,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '訊息數量',
+                            font: {
+                                size: 14
                             }
                         }
                     }
@@ -301,18 +308,8 @@ class ChartRenderer {
         // Convert seconds to minutes for better display
         const callDuration = Object.values(this.results.callDurationByDate).map(seconds => Math.round(seconds / 60));
         
-        // Format dates for display (MM/DD or YYYY/MM/DD)
-        const formattedDates = dates.map(date => {
-            const parts = date.split('/');
-            if (parts.length === 3) {
-                if (parts[0].length === 4) { // YYYY/MM/DD
-                    return `${parts[1]}/${parts[2]}`;
-                } else { // MM/DD/YYYY
-                    return `${parts[0]}/${parts[1]}`;
-                }
-            }
-            return date;
-        });
+        // Convert dates to day numbers (1, 2, 3, ...)
+        const dayNumbers = dates.map((_, index) => (index + 1).toString());
         
         // Create gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -322,7 +319,7 @@ class ChartRenderer {
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: formattedDates,
+                labels: dayNumbers,
                 datasets: [{
                     label: '通話時間',
                     data: callDuration,
@@ -394,8 +391,18 @@ class ChartRenderer {
                             display: false
                         },
                         ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '天數',
+                            font: {
+                                size: 14
+                            }
                         }
                     },
                     y: {
@@ -404,10 +411,16 @@ class ChartRenderer {
                             color: 'rgba(0, 0, 0, 0.05)'
                         },
                         ticks: {
-                            callback: function(value) {
-                                if (Math.floor(value) === value) {
-                                    return value;
-                                }
+                            stepSize: 5,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '通話時間 (分鐘)',
+                            font: {
+                                size: 14
                             }
                         }
                     }
