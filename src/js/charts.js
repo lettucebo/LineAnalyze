@@ -107,21 +107,34 @@ class ChartRenderer {
                 plugins: {
                     legend: {
                         display: false
-                    },
-                    tooltip: {
+                    },                    tooltip: {
                         mode: 'index',
                         intersect: false,
-                        backgroundColor: 'rgba(45, 52, 54, 0.8)',
+                        backgroundColor: 'rgba(45, 52, 54, 0.95)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 15
+                        },
+                        displayColors: false,
                         titleFont: {
-                            size: 14
+                            size: 14,
+                            weight: 'bold'
                         },
                         bodyFont: {
                             size: 13
                         },
-                        padding: 12,
-                        displayColors: false
+                        callbacks: {
+                            title: function(context) {
+                                return '日期: ' + dates[context[0].dataIndex];
+                            },
+                            label: function(context) {
+                                return `訊息數量: ${context.raw.toLocaleString()}`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -177,7 +190,6 @@ class ChartRenderer {
         // 檢查是否有資料
         if (users.length === 0 || messageCounts.every(count => count === 0)) {
             console.warn("沒有用戶訊息數據可用");
-            // 在圖表容器中顯示警告訊息
             const container = document.getElementById('user-messages-chart').parentNode;
             const warningMsg = document.createElement('div');
             warningMsg.className = 'text-center text-muted mt-5';
@@ -190,57 +202,88 @@ class ChartRenderer {
         const userColors = this.generateColorPalette(users.length);
         
         const chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
+            type: 'doughnut',            data: {
                 labels: users,
                 datasets: [{
                     data: messageCounts,
                     backgroundColor: userColors,
                     borderColor: '#ffffff',
                     borderWidth: 2,
-                    hoverOffset: 10
+                    hoverOffset: 20,
+                    hoverBorderWidth: 3
                 }]
-            },
+            },            
             options: {
                 cutout: '60%',
-                plugins: {                    legend: {
+                radius: '90%',
+                hover: {
+                    mode: 'point'
+                },
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements[0] ? 'pointer' : 'default';
+                },
+                interaction: {
+                    mode: 'point',
+                    intersect: true
+                },
+                plugins: {
+                    legend: {
                         position: 'right',
                         labels: {
-                            boxWidth: 15,
-                            padding: 15,
+                            usePointStyle: true,
+                            padding: 20,
                             font: {
                                 family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                                 size: 12
                             }
                         }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(45, 52, 54, 0.8)',
+                    },                    tooltip: {
+                        enabled: true,
+                        position: 'average',
+                        backgroundColor: 'rgba(45, 52, 54, 0.95)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
-                        padding: 12,
+                        titleMarginBottom: 10,
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 15
+                        },
+                        bodySpacing: 5,
+                        displayColors: false,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
                         callbacks: {
+                            title: function(context) {
+                                return `使用者: ${context[0].label}`;
+                            },
                             label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const value = context.raw;
-                                const percentage = Math.round((value / total) * 100);
-                                return `${context.label}: ${value} (${percentage}%)`;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return [
+                                    `訊息數量: ${value.toLocaleString()}`,
+                                    `佔比: ${percentage}%`
+                                ];
+                            },
+                            afterLabel: function(context) {
+                                return '';  // 添加一個空行
                             }
                         }
                     }
                 },
-                // 明確設置響應式選項
+                animation: {
+                    animateRotate: true,
+                    animateScale: true
+                },
                 responsive: true,
-                maintainAspectRatio: false,
-                // 確保圖表有足夠的空間顯示
-                layout: {
-                    padding: {
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 0
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
         
@@ -260,7 +303,6 @@ class ChartRenderer {
         
         // Format dates for display (MM/DD or YYYY/MM/DD)
         const formattedDates = dates.map(date => {
-            // Check if date is in MM/DD/YYYY or YYYY/MM/DD format
             const parts = date.split('/');
             if (parts.length === 3) {
                 if (parts[0].length === 4) { // YYYY/MM/DD
@@ -282,7 +324,7 @@ class ChartRenderer {
             data: {
                 labels: formattedDates,
                 datasets: [{
-                    label: '通話時間 (分鐘)',
+                    label: '通話時間',
                     data: callDuration,
                     backgroundColor: gradient,
                     borderColor: this.colors.secondary,
@@ -290,26 +332,58 @@ class ChartRenderer {
                     pointBackgroundColor: this.colors.secondary,
                     pointRadius: 4,
                     pointHoverRadius: 6,
+                    pointHoverBackgroundColor: this.colors.secondary,
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2,
                     fill: true,
                     tension: 0.4
                 }]
             },
             options: {
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements[0] ? 'pointer' : 'default';
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
                 plugins: {
                     legend: {
                         display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(45, 52, 54, 0.8)',
+                    },                    tooltip: {
+                        enabled: true,
+                        position: 'nearest',
+                        backgroundColor: 'rgba(45, 52, 54, 0.95)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
-                        padding: 12,
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 15
+                        },
                         displayColors: false,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
                         callbacks: {
+                            title: function(context) {
+                                return '日期: ' + dates[context[0].dataIndex];
+                            },
                             label: function(context) {
-                                return `${context.dataset.label}: ${context.raw}`;
+                                const minutes = context.raw;
+                                const hours = Math.floor(minutes / 60);
+                                const remainingMinutes = minutes % 60;
+                                if (hours > 0) {
+                                    return `通話時間: ${hours}小時${remainingMinutes}分鐘`;
+                                } else {
+                                    return `通話時間: ${minutes}分鐘`;
+                                }
                             }
                         }
                     }
@@ -324,7 +398,8 @@ class ChartRenderer {
                             minRotation: 45
                         }
                     },
-                    y: {                        beginAtZero: true,
+                    y: {
+                        beginAtZero: true,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
                         },
