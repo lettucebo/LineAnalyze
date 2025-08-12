@@ -3,6 +3,23 @@
  * Generates statistics and metrics from chat messages
  */
 class ChatAnalyzer {
+    // 通話類型常數
+    static CALL_TYPES = {
+        SUCCESSFUL: 'successful',
+        MISSED: 'missed',
+        MISSED_OUTGOING: 'missed_outgoing'
+    };
+
+    // 通話時長區間（秒）
+    static CALL_DURATION_RANGES = [
+        { min: 0, max: 60, label: '0-1分鐘' },
+        { min: 60, max: 300, label: '1-5分鐘' },
+        { min: 300, max: 600, label: '5-10分鐘' },
+        { min: 600, max: 1800, label: '10-30分鐘' },
+        { min: 1800, max: 3600, label: '30-60分鐘' },
+        { min: 3600, max: Infinity, label: '60分鐘以上' }
+    ];
+
     /**
      * Constructor for ChatAnalyzer
      * @param {Object} chatData - The parsed chat data from LineParser
@@ -39,7 +56,16 @@ class ChatAnalyzer {
             users: this.calculateUserStats(),
             
             // Content analysis
-            wordFrequency: this.analyzeWordFrequency()
+            wordFrequency: this.analyzeWordFrequency(),
+
+            // 通話類型統計
+            callTypeStats: this.analyzeCallTypes(),
+            
+            // 通話時長分布
+            callDurationDistribution: this.analyzeCallDurationDistribution(),
+
+            // 使用者通話行為
+            userCallBehavior: this.analyzeUserCallBehavior()
         };
     }
     
@@ -210,20 +236,35 @@ class ChatAnalyzer {
      * @private
      * @param {Object} message - The message object to check
      * @return {boolean} True if the message is a system message
-     */
-    _isSystemMessage(message) {
+     */    _isSystemMessage(message) {
         // 通話相關的系統訊息
         const callSystemPatterns = [
+            // 成功通話相關
             /通話時間/,
-            /☎/,
-            /已結束通話/,
-            /結束通話/,
-            /您已/,
-            /通話/,
             /Call time/,
             /call ended/,
+            /通話已結束/,
+            /已結束通話/,
+            /結束通話/,
+            
+            // 未接來電相關
+            /未接通話/,
             /missed a voice call/,
-            /Started a voice call/
+            /Missed voice call/,
+            /未接來電/,
+            
+            // 撥出未接相關
+            /對方未接通話/,
+            /The recipient did not answer/,
+            /call was not answered/,
+            /對方未接聽/,
+            
+            // 其他通話相關
+            /☎/,
+            /您已/,
+            /通話/,
+            /Started a voice call/,
+            /發起通話/
         ];
 
         return message.type === "call" || 
@@ -349,5 +390,128 @@ class ChatAnalyzer {
      */
     getResults() {
         return this.results;
+    }
+
+    /**
+     * 分析通話類型
+     * @private
+     * @param {Object} message - 訊息物件
+     * @return {string} 通話類型
+     */
+    _getCallType(message) {
+        if (message.type !== 'text' && message.type !== 'call') return null;
+
+        const content = message.content || '';
+        if (this._isSystemMessage(message)) {
+            if (/未接通話|missed a voice call|Missed voice call/.test(content)) {
+                return ChatAnalyzer.CALL_TYPES.MISSED;
+            } else if (/對方未接通話|The recipient did not answer|call was not answered/.test(content)) {
+                return ChatAnalyzer.CALL_TYPES.MISSED_OUTGOING;
+            } else if (/通話時間|Call time|call ended/.test(content)) {
+                return ChatAnalyzer.CALL_TYPES.SUCCESSFUL;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 分析通話類型統計
+     * @return {Object} 各類型通話的統計數據
+     */
+    analyzeCallTypes() {
+        const stats = {
+            [ChatAnalyzer.CALL_TYPES.SUCCESSFUL]: 0,
+            [ChatAnalyzer.CALL_TYPES.MISSED]: 0,
+            [ChatAnalyzer.CALL_TYPES.MISSED_OUTGOING]: 0
+        };
+
+        this.chatData.messages.forEach(message => {
+            const callType = this._getCallType(message);
+            if (callType) {
+                stats[callType]++;
+            }
+        });
+
+        return stats;
+    }
+
+    /**
+     * 分析通話時長分布
+     * @return {Object} 通話時長分布統計
+     */
+    analyzeCallDurationDistribution() {
+        const distribution = ChatAnalyzer.CALL_DURATION_RANGES.map(range => ({
+            ...range,
+            count: 0,
+            totalDuration: 0
+        }));
+
+        this.chatData.messages.forEach(message => {
+            if (message.type === 'call' && this._getCallType(message) === ChatAnalyzer.CALL_TYPES.SUCCESSFUL) {
+                const duration = (message.callMinutes * 60) + message.callSeconds;
+                const range = distribution.find(r => duration >= r.min && duration < r.max);
+                if (range) {
+                    range.count++;
+                    range.totalDuration += duration;
+                }
+            }
+        });
+
+        return distribution;
+    }
+
+    /**
+     * 分析使用者通話行為
+     * @return {Object} 使用者通話行為統計
+     */
+    analyzeUserCallBehavior() {
+        const userCallStats = {};
+
+        this.chatData.messages.forEach(message => {
+            const callType = this._getCallType(message);
+            if (!callType) return;
+
+            const sender = message.sender;
+            if (!userCallStats[sender]) {
+                userCallStats[sender] = {
+                    totalCalls: 0,
+                    successfulCalls: 0,
+                    missedCalls: 0,
+                    missedOutgoingCalls: 0,
+                    totalCallDuration: 0,
+                    averageCallDuration: 0,
+                    callSuccessRate: 0
+                };
+            }
+
+            userCallStats[sender].totalCalls++;
+            switch (callType) {
+                case ChatAnalyzer.CALL_TYPES.SUCCESSFUL:
+                    userCallStats[sender].successfulCalls++;
+                    if (message.type === 'call') {
+                        const duration = (message.callMinutes * 60) + message.callSeconds;
+                        userCallStats[sender].totalCallDuration += duration;
+                    }
+                    break;
+                case ChatAnalyzer.CALL_TYPES.MISSED:
+                    userCallStats[sender].missedCalls++;
+                    break;
+                case ChatAnalyzer.CALL_TYPES.MISSED_OUTGOING:
+                    userCallStats[sender].missedOutgoingCalls++;
+                    break;
+            }
+        });
+
+        // 計算平均通話時長和成功率
+        Object.values(userCallStats).forEach(stats => {
+            stats.averageCallDuration = stats.successfulCalls > 0 
+                ? stats.totalCallDuration / stats.successfulCalls 
+                : 0;
+            stats.callSuccessRate = stats.totalCalls > 0 
+                ? (stats.successfulCalls / stats.totalCalls) * 100 
+                : 0;
+        });
+
+        return userCallStats;
     }
 }

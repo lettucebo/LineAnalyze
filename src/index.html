@@ -2,13 +2,17 @@
 <!-- Chart.js 3.x版本不需要CSS文件 -->
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LINE聊天分析器</title>
-    <!-- Bootstrap 5 CSS from Cloudflare CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" integrity="sha512-t4GWSVZO1eC8BM339Xd7Uphw5s17a86tIZIj8qRxhnKub6WoyhnrxeCIMeAqBPgdZGlCcG2PrZjMc+Wr78+5Xg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Font Awesome from Cloudflare CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />    <!-- Custom CSS -->
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -206,23 +210,65 @@
                 <div class="row mb-5">
                     <div class="col-12">
                         <h2 class="section-title mb-4"><i class="fas fa-chart-line me-2"></i>趨勢圖表</h2>
-                    </div>                    <div class="col-lg-6 mb-4">
+                    </div>
+                    <!-- Message Analysis Charts -->
+                    <div class="col-lg-6 mb-4">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">每日訊息數量</h5>
                                 <div class="chart-container" style="min-height:300px; position:relative;">
                                     <canvas id="daily-messages-chart"></canvas>
-                                    <!-- 如果沒有數據，將在這裡顯示警告訊息 -->
                                 </div>
                             </div>
                         </div>
-                    </div><div class="col-lg-6 mb-4">
+                    </div>
+                    <div class="col-lg-6 mb-4">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">使用者訊息比例</h5>
                                 <div class="chart-container" style="min-height:300px; position:relative;">
                                     <canvas id="user-messages-chart"></canvas>
-                                    <!-- 這裡將顯示警告訊息（如果沒有數據） -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Call Analysis Charts -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">通話類型分布</h5>
+                                <div class="chart-container" style="min-height:300px; position:relative;">
+                                    <div id="call-type-pie-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">通話時長分布</h5>
+                                <div class="chart-container" style="min-height:300px; position:relative;">
+                                    <div id="call-duration-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">使用者通話成功率</h5>
+                                <div class="chart-container" style="min-height:300px; position:relative;">
+                                    <div id="call-success-rate-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">使用者通話類型分布</h5>
+                                <div class="chart-container" style="min-height:300px; position:relative;">
+                                    <div id="user-call-type-chart"></div>
                                 </div>
                             </div>
                         </div>

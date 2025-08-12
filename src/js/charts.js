@@ -305,13 +305,10 @@ class ChartRenderer {
         const ctx = document.getElementById('daily-call-chart').getContext('2d');
         
         const dates = Object.keys(this.results.callDurationByDate);
-        // Convert seconds to minutes for better display
         const callDuration = Object.values(this.results.callDurationByDate).map(seconds => Math.round(seconds / 60));
         
-        // Convert dates to day numbers (1, 2, 3, ...)
         const dayNumbers = dates.map((_, index) => (index + 1).toString());
         
-        // Create gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, this.colors.gradient.secondary.start);
         gradient.addColorStop(1, this.colors.gradient.secondary.end);
@@ -536,5 +533,665 @@ class ChartRenderer {
         }
         
         return palette;
+    }
+
+    /**
+     * 創建通話類型分布圓餅圖
+     * @return {Chart} The Chart.js chart object
+     */
+    createCallTypesChart() {
+        const ctx = document.getElementById('call-types-chart').getContext('2d');
+        
+        const callTypes = this.results.callTypes;
+        const labels = {
+            completed: '已接通話',
+            missed: '未接來電',
+            cancelled: '取消的通話'
+        };
+        
+        // 準備數據
+        const data = [
+            callTypes.completed,
+            callTypes.missed,
+            callTypes.cancelled
+        ];
+        const chartLabels = [
+            `${labels.completed} (${callTypes.completed}次)`,
+            `${labels.missed} (${callTypes.missed}次)`,
+            `${labels.cancelled} (${callTypes.cancelled}次)`
+        ];
+        
+        // 生成顏色
+        const colors = [
+            '#4cd137',  // 綠色表示已接
+            '#e84118',  // 紅色表示未接
+            '#fbc531'   // 黃色表示取消
+        ];
+        
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 20,
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                cutout: '60%',
+                radius: '90%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(45, 52, 54, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 15
+                        },
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label.split(' (')[0];
+                            },
+                            label: function(context) {
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return [
+                                    `次數: ${value}`,
+                                    `佔比: ${percentage}%`
+                                ];
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        return chart;
+    }
+
+    /**
+     * 創建使用者通話分析堆疊條形圖
+     * @return {Chart} The Chart.js chart object
+     */
+    createUserCallAnalysisChart() {
+        const ctx = document.getElementById('user-call-analysis-chart').getContext('2d');
+        const userCallTypes = this.results.userCallTypes;
+        
+        // 準備數據
+        const users = Object.keys(userCallTypes);
+        const completed = users.map(user => userCallTypes[user].completed);
+        const missed = users.map(user => userCallTypes[user].missed);
+        const cancelled = users.map(user => userCallTypes[user].cancelled);
+        
+        // 計算每位使用者的平均通話時長（分鐘）
+        const avgDuration = users.map(user => {
+            const totalCalls = userCallTypes[user].completed;
+            return totalCalls > 0 
+                ? Math.round(userCallTypes[user].totalDuration / (60 * totalCalls))
+                : 0;
+        });
+        
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: users,
+                datasets: [
+                    {
+                        label: '已接通話',
+                        data: completed,
+                        backgroundColor: '#4cd137',
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '未接來電',
+                        data: missed,
+                        backgroundColor: '#e84118',
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '取消的通話',
+                        data: cancelled,
+                        backgroundColor: '#fbc531',
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '平均通話時長(分鐘)',
+                        data: avgDuration,
+                        type: 'line',
+                        borderColor: '#00a8ff',
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '通話次數',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '平均通話時長(分鐘)',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(45, 52, 54, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 15
+                        },
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return `使用者: ${context[0].label}`;
+                            },
+                            label: function(context) {
+                                const dataset = context.dataset;
+                                if (dataset.type === 'line') {
+                                    return `平均通話時長: ${context.raw}分鐘`;
+                                }
+                                const total = completed[context.dataIndex] + 
+                                            missed[context.dataIndex] + 
+                                            cancelled[context.dataIndex];
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return [
+                                    `${dataset.label}: ${context.raw}次`,
+                                    `佔比: ${percentage}%`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        return chart;
+    }
+
+    /**
+     * 繪製通話類型比例圓餅圖
+     * @param {string} containerId - 圖表容器的 ID
+     */
+    renderCallTypePieChart(containerId) {
+        const stats = this.results.callTypeStats;
+        const data = [
+            { label: '成功通話', value: stats.successful },
+            { label: '未接來電', value: stats.missed },
+            { label: '對方未接', value: stats.missed_outgoing }
+        ];
+
+        const colors = ['#4CAF50', '#FFC107', '#F44336'];
+
+        const pie = d3.pie()
+            .value(d => d.value)
+            .sort(null);
+
+        const width = 400;
+        const height = 400;
+        const radius = Math.min(width, height) / 2;
+
+        const arc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(radius - 10);
+
+        const svg = d3.select(`#${containerId}`)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('transform', `translate(${width/2}, ${height/2})`);
+
+        // 繪製扇形
+        const paths = svg.selectAll('path')
+            .data(pie(data))
+            .enter()
+            .append('path')
+            .attr('d', arc)
+            .attr('fill', (d, i) => colors[i])
+            .attr('stroke', 'white')
+            .style('stroke-width', '2px');
+
+        // 添加標籤
+        const labelArc = d3.arc()
+            .innerRadius(radius * 0.6)
+            .outerRadius(radius * 0.6);
+
+        svg.selectAll('text')
+            .data(pie(data))
+            .enter()
+            .append('text')
+            .attr('transform', d => `translate(${labelArc.centroid(d)})`)
+            .attr('dy', '0.35em')
+            .style('text-anchor', 'middle')
+            .text(d => `${d.data.label}\n${d.data.value}次 (${Math.round(d.value/d3.sum(data, d => d.value)*100)}%)`);
+    }
+
+    /**
+     * 繪製通話時長分布柱狀圖
+     * @param {string} containerId - 圖表容器的 ID
+     */
+    renderCallDurationBarChart(containerId) {
+        const distribution = this.results.callDurationDistribution;
+        
+        const margin = {top: 20, right: 20, bottom: 30, left: 60};
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select(`#${containerId}`)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1);
+
+        const y = d3.scaleLinear()
+            .range([height, 0]);
+
+        x.domain(distribution.map(d => d.label));
+        y.domain([0, d3.max(distribution, d => d.count)]);
+
+        // 添加 X 軸
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)');
+
+        // 添加 Y 軸
+        svg.append('g')
+            .call(d3.axisLeft(y));
+
+        // 繪製柱狀
+        svg.selectAll('.bar')
+            .data(distribution)
+            .enter().append('rect')
+            .attr('class', 'bar')
+            .attr('x', d => x(d.label))
+            .attr('width', x.bandwidth())
+            .attr('y', d => y(d.count))
+            .attr('height', d => height - y(d.count))
+            .attr('fill', '#2196F3');
+
+        // 添加數值標籤
+        svg.selectAll('.label')
+            .data(distribution)
+            .enter().append('text')
+            .attr('class', 'label')
+            .attr('x', d => x(d.label) + x.bandwidth()/2)
+            .attr('y', d => y(d.count) - 5)
+            .attr('text-anchor', 'middle')
+            .text(d => d.count);
+    }
+
+    /**
+     * 繪製使用者通話成功率折線圖
+     * @param {string} containerId - 圖表容器的 ID
+     */
+    renderCallSuccessRateLineChart(containerId) {
+        const behavior = this.results.userCallBehavior;
+        const data = Object.entries(behavior).map(([name, stats]) => ({
+            name,
+            successRate: stats.callSuccessRate
+        }));
+
+        const margin = {top: 20, right: 20, bottom: 30, left: 60};
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select(`#${containerId}`)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // 設置 X 軸比例尺
+        const x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1)
+            .domain(data.map(d => d.name));
+
+        // 設置 Y 軸比例尺
+        const y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 100]); // 成功率範圍 0-100%
+
+        // 添加 X 軸
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)');
+
+        // 添加 Y 軸和標題
+        svg.append('g')
+            .call(d3.axisLeft(y))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 6)
+            .attr('dy', '0.71em')
+            .attr('text-anchor', 'end')
+            .text('成功率 (%)');
+
+        // 定義線條生成器
+        const line = d3.line()
+            .x(d => x(d.name) + x.bandwidth()/2)
+            .y(d => y(d.successRate));
+
+        // 繪製線條
+        svg.append('path')
+            .datum(data)
+            .attr('fill', 'none')
+            .attr('stroke', '#2196F3')
+            .attr('stroke-width', 2)
+            .attr('d', line);
+
+        // 添加資料點
+        svg.selectAll('.dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'dot')
+            .attr('cx', d => x(d.name) + x.bandwidth()/2)
+            .attr('cy', d => y(d.successRate))
+            .attr('r', 4)
+            .attr('fill', '#2196F3');
+
+        // 添加數值標籤
+        svg.selectAll('.label')
+            .data(data)
+            .enter()
+            .append('text')
+            .attr('class', 'label')
+            .attr('x', d => x(d.name) + x.bandwidth()/2)
+            .attr('y', d => y(d.successRate) - 10)
+            .attr('text-anchor', 'middle')
+            .text(d => `${Math.round(d.successRate)}%`);
+
+        // 添加互動效果
+        const tooltip = d3.select(`#${containerId}`)
+            .append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0)
+            .style('position', 'absolute')
+            .style('background-color', 'rgba(0, 0, 0, 0.8)')
+            .style('color', 'white')
+            .style('padding', '8px')
+            .style('border-radius', '4px');
+
+        svg.selectAll('.dot')
+            .on('mouseover', function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 6);
+
+                tooltip.transition()
+                    .duration(200)
+                    .style('opacity', .9);
+
+                tooltip.html(`${d.name}<br/>成功率: ${Math.round(d.successRate)}%`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function() {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 4);
+
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+            });
+    }
+
+    /**
+     * 繪製使用者通話類型堆疊柱狀圖
+     * @param {string} containerId - 圖表容器的 ID
+     */
+    renderUserCallTypeStackedBarChart(containerId) {
+        const behavior = this.results.userCallBehavior;
+        const users = Object.keys(behavior);
+        const data = users.map(name => ({
+            name,
+            successful: behavior[name].successfulCalls,
+            missed: behavior[name].missedCalls,
+            missedOutgoing: behavior[name].missedOutgoingCalls
+        }));
+
+        const margin = {top: 20, right: 20, bottom: 30, left: 60};
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select(`#${containerId}`)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1)
+            .domain(data.map(d => d.name));
+
+        // 計算堆疊數據
+        const stack = d3.stack()
+            .keys(['successful', 'missed', 'missedOutgoing'])
+            .value((d, key) => d[key]);
+
+        const stackedData = stack(data);
+
+        // 設定 Y 軸範圍
+        const y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, d3.max(stackedData[stackedData.length - 1], d => d[1])]);
+
+        // 顏色比例尺
+        const color = d3.scaleOrdinal()
+            .domain(['successful', 'missed', 'missedOutgoing'])
+            .range(['#4CAF50', '#FFC107', '#F44336']);
+
+        // 添加 X 軸
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)');
+
+        // 添加 Y 軸
+        svg.append('g')
+            .call(d3.axisLeft(y));
+
+        // 建立圖例
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 100}, 0)`);
+
+        const legendItems = [
+            { label: '成功通話', color: '#4CAF50' },
+            { label: '未接來電', color: '#FFC107' },
+            { label: '對方未接', color: '#F44336' }
+        ];
+
+        legendItems.forEach((item, i) => {
+            const g = legend.append('g')
+                .attr('transform', `translate(0, ${i * 20})`);
+
+            g.append('rect')
+                .attr('width', 10)
+                .attr('height', 10)
+                .attr('fill', item.color);
+
+            g.append('text')
+                .attr('x', 15)
+                .attr('y', 10)
+                .attr('font-size', '12px')
+                .text(item.label);
+        });
+
+        // 繪製堆疊條形圖
+        const groups = svg.selectAll('g.series')
+            .data(stackedData)
+            .enter()
+            .append('g')
+            .attr('class', 'series')
+            .style('fill', (d, i) => color(d.key));
+
+        groups.selectAll('rect')
+            .data(d => d)
+            .enter()
+            .append('rect')
+            .attr('x', d => x(d.data.name))
+            .attr('y', d => y(d[1]))
+            .attr('height', d => y(d[0]) - y(d[1]))
+            .attr('width', x.bandwidth());
+
+        // 添加互動效果
+        const tooltip = d3.select(`#${containerId}`)
+            .append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0)
+            .style('position', 'absolute')
+            .style('background-color', 'rgba(0, 0, 0, 0.8)')
+            .style('color', 'white')
+            .style('padding', '8px')
+            .style('border-radius', '4px');
+
+        groups.selectAll('rect')
+            .on('mouseover', function(event, d) {
+                const seriesKey = d3.select(this.parentNode).datum().key;
+                const value = d.data[seriesKey];
+                const total = d.data.successful + d.data.missed + d.data.missedOutgoing;
+                const percentage = ((value / total) * 100).toFixed(1);
+
+                d3.select(this)
+                    .style('opacity', 0.8);
+
+                tooltip.transition()
+                    .duration(200)
+                    .style('opacity', .9);
+
+                const typeLabels = {
+                    successful: '成功通話',
+                    missed: '未接來電',
+                    missedOutgoing: '對方未接'
+                };
+
+                tooltip.html(`${d.data.name}<br/>${typeLabels[seriesKey]}: ${value}次<br/>佔比: ${percentage}%`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function() {
+                d3.select(this)
+                    .style('opacity', 1);
+
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+            });
+    }
+
+    /**
+     * 渲染所有通話分析圖表
+     * @param {Object} containers - 包含各圖表容器 ID 的物件
+     */
+    renderCallAnalysisCharts(containers) {
+        this.renderCallTypePieChart(containers.pieChart);
+        this.renderCallDurationBarChart(containers.barChart);
+        this.renderCallSuccessRateLineChart(containers.lineChart);
+        this.renderUserCallTypeStackedBarChart(containers.stackedBarChart);
     }
 }

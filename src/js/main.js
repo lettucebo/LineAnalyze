@@ -147,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Updates the UI with analysis results
      * @param {Object} results - The analysis results
-     */    function updateUI(results) {
+     */    
+    function updateUI(results) {
         // Show results section
         resultsSection.classList.remove('d-none');
         
@@ -166,7 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('total-messages').textContent = results.totalMessages;
             document.getElementById('total-calls').textContent = results.totalCalls;
         }, 500);
-          // Format call time as hours, minutes and seconds
+
+        // Format call time as hours, minutes and seconds
         const totalSeconds = results.totalCallDuration;
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -184,6 +186,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         document.getElementById('total-call-time').textContent = timeString;
+
+        // Create chart renderer with the analysis results
+        const chartRenderer = new ChartRenderer(results);
+        
+        // 清除現有的圖表容器內容
+        document.getElementById('call-type-pie-chart').innerHTML = '';
+        document.getElementById('call-duration-chart').innerHTML = '';
+        document.getElementById('call-success-rate-chart').innerHTML = '';
+        document.getElementById('user-call-type-chart').innerHTML = '';
+
+        // 渲染新的通話分析圖表
+        if (results.callTypeStats && Object.keys(results.callTypeStats).length > 0) {
+            chartRenderer.renderCallTypePieChart('call-type-pie-chart');
+        }
+        
+        if (results.callDurationDistribution && results.callDurationDistribution.length > 0) {
+            chartRenderer.renderCallDurationBarChart('call-duration-chart');
+        }
+        
+        if (results.userCallBehavior && Object.keys(results.userCallBehavior).length > 0) {
+            chartRenderer.renderCallSuccessRateLineChart('call-success-rate-chart');
+            chartRenderer.renderUserCallTypeStackedBarChart('user-call-type-chart');
+        }
+
+        // 渲染原有的圖表
+        // ...existing code for other charts...
         
         // Max messages per day
         document.getElementById('max-messages-day').textContent = results.maxMessagesDay.count;
